@@ -8,6 +8,7 @@ The MNIST dataset consists of 70,000 grayscale images of handwritten digits (0-9
 
 ## Neural Network Model
 Include the neural network model diagram.
+
 ## DESIGN STEPS
 ### STEP 1: 
 
@@ -64,13 +65,11 @@ Visualize confusion matrix using heatmap and display classification report with 
 
 Predict single image: load from dataset, infer, and display actual-predicted labels.
 
-
-
 ## PROGRAM
 
-### Name: DIVYA E
+### Name:DIVYA E
 
-### Register Number: 21222323050
+### Register Number:212223230050
 ```
 import torch
 import torch.nn as nn
@@ -82,94 +81,68 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import confusion_matrix, classification_report
 import seaborn as sns
-
-## Step 1: Load and Preprocess Data
-# Define transformations for images
 transform = transforms.Compose([
-    transforms.ToTensor(),          # Convert images to tensors
-    transforms.Normalize((0.5,), (0.5,))  # Normalize images
+    transforms.ToTensor(),          
+    transforms.Normalize((0.5,), (0.5,))
 ])
-
-# Load MNIST dataset
 train_dataset = torchvision.datasets.MNIST(root="./data", train=True, transform=transform, download=True)
 test_dataset = torchvision.datasets.MNIST(root="./data", train=False, transform=transform, download=True)
-
-# Get the shape of the first image in the training dataset
 image, label = train_dataset[0]
 print("Image shape:", image.shape)
 print("Number of training samples:", len(train_dataset))
-
-# Get the shape of the first image in the test dataset
-image, label = test_dataset[0]
-print("Image shape:", image.shape)
-print("Number of testing samples:", len(test_dataset))
-
-
-# Create DataLoader for batch processing
 train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
-
 class CNNClassifier(nn.Module):
     def __init__(self):
         super(CNNClassifier, self).__init__()
-        self.conv1=nn.Conv2d(in_channels=1,out_channels=32,kernel_size=3,padding=1)
-        self.conv2=nn.Conv2d(in_channels=32,out_channels=64,kernel_size=3,padding=1)
-        self.conv3=nn.Conv2d(in_channels=64,out_channels=128,kernel_size=3,padding=1)
-        self.pool=nn.MaxPool2d(kernel_size=2,stride=2)
-        self.fc1=nn.Linear(128*3*3,128)
-        self.fc2=nn.Linear(128,64)
-        self.fc3=nn.Linear(64,10)
+        self.conv1 = nn.Conv2d(1, 32, kernel_size=3, padding=1)
+        self.pool = nn.MaxPool2d(2, 2)
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
+        self.fc1 = nn.Linear(64 * 7 * 7, 128)
+        self.fc2 = nn.Linear(128, 10)
+        self.dropout = nn.Dropout(0.3)
+        self.relu = nn.ReLU()
 
     def forward(self, x):
-      x=self.pool(torch.relu(self.conv1(x)))
-      x=self.pool(torch.relu(self.conv2(x)))
-      x=self.pool(torch.relu(self.conv3(x)))
-      x=x.view(x.size(0),-1)
-      x=torch.relu(self.fc1(x))
-      x=torch.relu(self.fc2(x))
-      x=self.fc3(x)
-      return x
-
+        x = self.relu(self.conv1(x))
+        x = self.pool(x)
+        x = self.relu(self.conv2(x))
+        x = self.pool(x)
+        x = x.view(-1, 64 * 7 * 7)   # flatten
+        x = self.relu(self.fc1(x))
+        x = self.dropout(x)
+        x = self.fc2(x)
+        return x
 from torchsummary import summary
-
-# Initialize model
 model = CNNClassifier()
 
-# Move model to GPU if available
 if torch.cuda.is_available():
     device = torch.device("cuda")
     model.to(device)
-
-# Print model summary
-print('Name: vignesh.v')
-print('Register Number:  212223230241')
 summary(model, input_size=(1, 28, 28))
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print("Using device:", device)
 
-# Initialize model, loss function, and optimizer
+model = CNNClassifier().to(device)
 criterion = nn.CrossEntropyLoss()
-optimizer =optim.Adam(model.parameters(),lr=0.001)
+optimizer = optim.Adam(model.parameters(), lr=0.001)
+def train_model(model, train_loader, num_epochs=5):
+    for epoch in range(num_epochs):
+        model.train()
+        running_loss = 0.0
 
-## Step 3: Train the Model
-def train_model(model, train_loader, num_epochs=10):
-  for epoch in range(num_epochs):
-     model.train()
-     running_loss=0.0
-     for images,labels in train_loader:
-      if torch.cuda.is_available():
-        images,labels=images.to(device),labels.to(device)
-      optimizer.zero_grad()
-      outputs=model(images)
-      loss=criterion(outputs,labels)
-      loss.backward()
-      optimizer.step()
-      running_loss+=loss.item()
-     print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {running_loss/len(train_loader):.4f}')
-  print('Name: vignesh.v')
-  print('Register Number: 212223230241 ')
-# Train the model
+        for images, labels in train_loader:
+            images, labels = images.to(device), labels.to(device)
+
+            optimizer.zero_grad()
+            outputs = model(images)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
+
+            running_loss += loss.item()
+        print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {running_loss/len(train_loader):.4f}')
 train_model(model, train_loader, num_epochs=10)
-## Step 4: Test the Model
-
 def test_model(model, test_loader):
     model.eval()
     correct = 0
@@ -190,10 +163,8 @@ def test_model(model, test_loader):
             all_labels.extend(labels.cpu().numpy())
 
     accuracy = correct / total
-    print('Name: DIVYA')
-    print('Register Number: 212223230050')
     print(f'Test Accuracy: {accuracy:.4f}')
-    # Compute confusion matrix
+    
     cm = confusion_matrix(all_labels, all_preds)
     plt.figure(figsize=(8, 6))
     sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=test_dataset.classes, yticklabels=test_dataset.classes)
@@ -201,14 +172,10 @@ def test_model(model, test_loader):
     plt.ylabel('Actual')
     plt.title('Confusion Matrix')
     plt.show()
-    # Print classification report
+
     print("Classification Report:")
     print(classification_report(all_labels, all_preds, target_names=[str(i) for i in range(10)]))
-# Evaluate the model
 test_model(model, test_loader)
-
-
-## Step 5: Predict on a Single Image
 def predict_image(model, image_index, dataset):
     model.eval()
     image, label = dataset[image_index]
@@ -220,20 +187,27 @@ def predict_image(model, image_index, dataset):
         _, predicted = torch.max(output, 1)
 
     class_names = [str(i) for i in range(10)]
-
-    print('Name: vignesh.v')
-    print('Register Number: 212223230241')
     plt.imshow(image.cpu().squeeze(), cmap="gray")
     plt.title(f'Actual: {class_names[label]}\nPredicted: {class_names[predicted.item()]}')
     plt.axis("off")
     plt.show()
     print(f'Actual: {class_names[label]}, Predicted: {class_names[predicted.item()]}')
-# Example Prediction
 predict_image(model, image_index=80, dataset=test_dataset)
-
 ```
-
 ### OUTPUT
+<img width="636" height="462" alt="image" src="https://github.com/user-attachments/assets/74d01a6c-c2a7-4a78-9a8d-63dfaccf98ca" />
+
+## Training Loss per Epoch
+<img width="287" height="212" alt="image" src="https://github.com/user-attachments/assets/71d5cc09-7edd-4c48-8825-a317e76797e4" />
+
+## Confusion Matrix
+<img width="832" height="696" alt="image" src="https://github.com/user-attachments/assets/bfde4823-fafb-4ecc-9738-3ef04625e7bd" />
+
+## Classification Report
+<img width="517" height="362" alt="image" src="https://github.com/user-attachments/assets/a30cade5-d7c1-4d0b-b906-95bf965a4ec1" />
+
+### New Sample Data Prediction
+<img width="490" height="528" alt="image" src="https://github.com/user-attachments/assets/565e3c45-b707-4681-87c7-7bace8892c3d" />
 
 ## RESULT
 Developing a convolutional neural network (CNN) classification model for the given dataset was executed successfully.
