@@ -190,8 +190,8 @@ def test_model(model, test_loader):
             all_labels.extend(labels.cpu().numpy())
 
     accuracy = correct / total
-    print('Name: vignesh.v ')
-    print('Register Number: 212223230241 ')
+    print('Name: DIVYA')
+    print('Register Number: 212223230050')
     print(f'Test Accuracy: {accuracy:.4f}')
     # Compute confusion matrix
     cm = confusion_matrix(all_labels, all_preds)
@@ -234,15 +234,6 @@ predict_image(model, image_index=80, dataset=test_dataset)
 ```
 
 ### OUTPUT
-<img width="615" height="539" alt="Screenshot 2025-10-07 224913" src="https://github.com/user-attachments/assets/ca6b0628-208d-4665-b54c-91ecb586f173" />
-
-<img width="260" height="233" alt="Screenshot 2025-10-07 224921" src="https://github.com/user-attachments/assets/be5df355-95ef-439a-b29a-4a6fad146277" />
-
-<img width="806" height="726" alt="Screenshot 2025-10-07 224935" src="https://github.com/user-attachments/assets/5eaa91d9-4293-4b7d-bbaa-c600ede29611" />
-
-<img width="528" height="354" alt="Screenshot 2025-10-07 224943" src="https://github.com/user-attachments/assets/99ff9e3e-d9c7-4bb5-bcdc-0bab4d4c628b" />
-
-<img width="499" height="553" alt="Screenshot 2025-10-07 225000" src="https://github.com/user-attachments/assets/a2b0c2d5-013e-4cee-a99e-91179ae52262" />
 
 ## RESULT
 Developing a convolutional neural network (CNN) classification model for the given dataset was executed successfully.
